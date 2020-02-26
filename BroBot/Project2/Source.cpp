@@ -32,6 +32,10 @@ using namespace std;
 
 #define NUM_OF_PARTS 16
 
+struct Rect {
+	float vert[2 * 4];
+}R[NUM_OF_PARTS];
+
 //Parameters for the Window & Canvas
 int win_width = 800, win_height = 800;
 float canvas_width = 20.0f; float canvas_height = 20.0f;
@@ -42,9 +46,13 @@ float rotations[NUM_OF_PARTS];
 
 bool keyStates[256];
 
+//To be used as an index for the highlighted rect
+int current;
+
 //Initializes variables on program execution. 
 void init(){
 
+	int current = -1; 
 	for(int i = 0; i < 256; i++)
 		keyStates[i] = false;
 
@@ -64,6 +72,15 @@ void reshape(int w, int h)
 	glutPostRedisplay();
 }
 
+void drawQuad(Rect R, const float* c) {
+
+	glColor3fv(c);
+	glLineWidth(3.0f);
+	glBegin(GL_QUADS);
+	for (int i = 0; i < 4; i++)
+		glVertex2f(R.vert[i * 2], R.vert[i * 2 + 1]);
+	glEnd();
+}
 void display(void) {
 
 	glClearColor(1.0, 1.0, 1.0, 0.0);
@@ -76,6 +93,12 @@ void display(void) {
 
 	glutSwapBuffers();
 }
+
+/*
+////ASCII Required
+	A : 65, 97  (lowercase)
+	D : 68, 100 (lowercase)
+*/
 
 void keyboard(unsigned char key, int x, int y)
 {
@@ -108,19 +131,64 @@ void keyboardUp(unsigned char key, int x, int y)
 	glutPostRedisplay();
 }
 
+void specialInput(int key, int x, int y){
+	
+	switch (key) {
+		
+//Cycle between parent and children rects
+	case GLUT_KEY_UP: break;
+
+	case GLUT_KEY_DOWN: break;
+//Cycle between children rects on the same level	
+	case GLUT_KEY_LEFT: break;
+
+	case GLUT_KEY_RIGHT: break;
+
+	default: break;
+	}
+
+}
+
+void specialInputUp(int key, int x, int y){
+
+	switch (key) {
+
+//Cycle between parent and children rects
+	case GLUT_KEY_UP: break;
+	
+	case GLUT_KEY_DOWN: break;
+//Cycle between children rects on the same level	
+	case GLUT_KEY_LEFT: break;
+	
+	case GLUT_KEY_RIGHT: break;
+
+	default: break;
+	}
+
+}
+
 int main(int argc, char* argv[])
 {
+	////Initialization
 	init();
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowSize(win_width, win_height);
 	glutCreateWindow("BROBOT - Your Friendly Brotherly Robot");
 
+	////Callbacks
+
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
+	//For A & D
 	glutKeyboardFunc(keyboard);
 	glutKeyboardUpFunc(keyboardUp);
+	//For Arrow Keys
+	glutSpecialFunc(specialInput);
+	glutSpecialUpFunc(specialInputUp);
+	//Run Main Loop
 	glutMainLoop();
+
 	return 0;
 
 }
