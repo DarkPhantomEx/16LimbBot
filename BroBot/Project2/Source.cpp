@@ -32,8 +32,14 @@ using namespace std;
 
 #define NUM_OF_PARTS 16
 
-struct Rect {
-	float vert[2 * 4];
+struct vert {
+	float x, y;
+};
+
+class Rect {
+public:
+	vert V[4];
+	float colors[3 * NUM_OF_PARTS];
 }R[NUM_OF_PARTS];
 
 //Parameters for the Window & Canvas
@@ -51,6 +57,8 @@ int current;
 
 //Initializes variables on program execution. 
 void init(){
+
+	/// Initialize Rect vertices
 
 	int current = -1; 
 	for(int i = 0; i < 256; i++)
@@ -72,22 +80,91 @@ void reshape(int w, int h)
 	glutPostRedisplay();
 }
 
-void drawQuad(Rect R, const float* c) {
+void drawQuad(Rect R){
+	//, const float* c) {
 
-	glColor3fv(c);
+	glColor3fv(R.colors);
 	glLineWidth(3.0f);
 	glBegin(GL_QUADS);
 	for (int i = 0; i < 4; i++)
-		glVertex2f(R.vert[i * 2], R.vert[i * 2 + 1]);
+		glVertex2f(R.V[i].x, R.V[i].y);
 	glEnd();
 }
 void display(void) {
+////STRUCTURE OF THE BODY (Representation will help with Push/Pop procedure)
+//PARENT: (L)ower(B)ody
+//	CHILDREN(LB) : (R)ight(T)high, (L)eft(T)high, (U)pper(B)ody,
+//	Children(RT) : RT1, RT2
+//	Children(LT) : LT1, LT2
+//	CHILDREN(UB) : (R)ight(A)rm, (L)eft(A)rm, Neck
+//	CHILDREN(RA) : RA1, RA2
+//	CHILDREN(LA) : LA1, LA2
+//	CHILDREN(Neck) : Head
+//	CHILDREN(Head) : null
 
 	glClearColor(1.0, 1.0, 1.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	drawQuad(R[0]);	//LB
+	glPushMatrix();
+	
+	drawQuad(R[1]); //RT
+		glPushMatrix();
+	drawQuad(R[2]); //RT1
+			glPushMatrix();
+	drawQuad(R[3]); //RT2
+			glPopMatrix();
+		glPopMatrix();
+	
+	//Back to LB, then LT
+	glPopMatrix();
+	glPushMatrix();
+	
+	drawQuad(R[4]); //LT
+		glPushMatrix();
+	drawQuad(R[5]); //LT1
+			glPushMatrix();
+	drawQuad(R[6]); //LT2
+			glPopMatrix();
+		glPopMatrix();
+
+	//Back to LB, then UB
+	glPopMatrix();
+
+	glPushMatrix(); //Stores LB, and draws UB with respect to LB
+	drawQuad(R[7]); //UB
+	glPushMatrix(); //Now onwards we wanna draw with respect to UB
+
+	//Push UB, then RA
+	drawQuad(R[8]); //RA
+		glPushMatrix();
+	drawQuad(R[9]); //RA1
+			glPushMatrix();
+	drawQuad(R[10]); //RA2
+			glPopMatrix();
+		glPopMatrix(); //After this, we're back at UB
+	//Back to UB, then LA
+	glPopMatrix();
+	glPushMatrix();
+
+	drawQuad(R[11]); //LA
+		glPushMatrix();
+	drawQuad(R[12]); //LA1
+			glPushMatrix();
+	drawQuad(R[13]); //LA2
+			glPopMatrix();
+		glPopMatrix();
+	
+	//Back to UB, then Neck
+	glPopMatrix();
+
+	glPushMatrix(); //To draw the Neck w.r.t UB, we push UB
+	drawQuad(R[14]); //Neck
+		glPushMatrix(); //To draw Head w.r.t Neck
+	drawQuad(R[15]); //Head
 
 	/// . . . . . 
 
